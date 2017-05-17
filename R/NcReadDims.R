@@ -44,6 +44,11 @@ NcReadDims <- function(file_to_read, var_names = NULL) {
       }
       found_dims <- file_object$var[[var_name]]$size
       names(found_dims) <- sapply(file_object$var[[var_name]]$dim, '[[', 'name')
+      # Support for character strings
+      if ((file_object$var[[var_name]]$prec == 'char') && 
+          (length(file_object$var[[var_name]][['dim']]) > 1)) {
+        found_dims <- found_dims[-1]
+      }
       new_dim <- c(var = 1)
       found_dims <- c(new_dim, found_dims)
       if (!is.null(dims)) {

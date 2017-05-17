@@ -1,7 +1,7 @@
 Package: easyNCDF
 Title: Tools to Easily Read/Write NetCDF Files into/from
         Multidimensional R Arrays
-Version: 0.0.1
+Version: 0.0.4
 Authors@R: c(
     person("BSC-CNS", role = c("aut", "cph")),
     person("Nicolau", "Manubens", , "nicolau.manubens@bsc.es", role = c("aut", "cre")))
@@ -14,9 +14,9 @@ BugReports: https://earth.bsc.es/gitlab/es/easyNCDF/issues
 LazyData: true
 SystemRequirements: netcdf development libraries
 NeedsCompilation: no
-Packaged: 2017-04-07 23:07:32 UTC; nmanubens
+Packaged: 2017-05-17 17:11:01 UTC; nmanuben
 Author: BSC-CNS [aut, cph],
   Nicolau Manubens [aut, cre]
 Maintainer: Nicolau Manubens <nicolau.manubens@bsc.es>
 Repository: CRAN
-Date/Publication: 2017-04-07 23:22:53 UTC
+Date/Publication: 2017-05-17 19:38:56 UTC

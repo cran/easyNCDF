@@ -5,7 +5,7 @@
 Read a NetCDF File Into an R Array
 }
 \description{
-Reads one or a set of variables together with metadata items from a NetCDF file into an R array. Indices to retrieve (not necessarily consecutive) can be specified for each of the dimensions. Depending on the format of the request, the variables will be merged in into a single extended array or returned in a list with an array for each variable. The different variables in the file are considered to be stored along a dimension called 'var', so reading a variable 'foo' with dimensions 'lat' and 'lon' would result in an array with the dimensions c('var' = 1, 'lat' = n_lats, 'lon' = n_lons).
+Reads one or a set of variables together with metadata items from a single NetCDF file into an R array (see package 'startR' to read data from multiple files/data sets). Indices to retrieve (not necessarily consecutive) can be specified for each of the dimensions. Depending on the format of the request, the variables will be merged in into a single extended array or returned in a list with an array for each variable. The different variables in the file are considered to be stored along a dimension called 'var', so reading a variable 'foo' with dimensions 'lat' and 'lon' would result in an array with the dimensions c('var' = 1, 'lat' = n_lats, 'lon' = n_lons).
 }
 \usage{
 NcToArray(file_to_read, dim_indices = NULL, vars_to_read = NULL,
@@ -17,7 +17,7 @@ nc2a(file_to_read, dim_indices = NULL, vars_to_read = NULL,
 }
 \arguments{
   \item{file_to_read}{
-Path to the file to be read or a NetCDF object as returned by \code{easyNCDF::NcOpen} or \code{ncdf4::nc_open}.
+Path to the file to be read or a NetCDF object as returned by \code{easyNCDF::NcOpen} or \code{ncdf4::nc_open}. See package 'startR' if need to read data from multiple files/data sets.
   }
   \item{dim_indices}{
 Named list with numeric vectors of indices to take for each dimension. The names should correspond to the dimension names which to take the indices for. Non-consecutive indices can be specified. If \code{expect_all_indices = FALSE} (default), it is not mandatory to specify the indices for all (or even any of) the dimensions. In that case all the indices along such dimensions will be read in. If \code{expect_all_indices = TRUE}, then indices for all the dimensions have to be specified for the function to return a data array. In that case, \code{NA} can be used to request all indices for a dimension if desired.
@@ -39,7 +39,7 @@ Whether to drop the 'var' dimension this function assumes (read description). If
 Whether to merge the resulting array variables into a single array if possible (default) or not. Otherwise a list with as many arrays as requested variables is returned.
   }
   \item{expect_all_indices}{
-Whether the function should stop if indices are not provided for all the dimensions of any of the requested variables rather than assuming that all the indices are requested for the unspecified dimensions. By default the later is done.
+Whether the function should stop if indices are not provided for all the dimensions of any of the requested variables (TRUE) rather than assuming that all the indices are requested for the unspecified dimensions (FALSE). By default the later is done (FALSE).
   }
   \item{allow_out_of_range}{
 Whether to allow indices out of range (simply disregard them) or to stop if indices out of range are found.
@@ -64,6 +64,26 @@ NcClose(fnc)
 # Check the obtained array matches the original array
 print(a)
 print(a_from_file[1, , ])
+
+# Example with extra dimensions of length 1
+# Creating sample data with singleton dimensions. Only dimensions 'a', 'b' and
+# 'c' are of length > 1.
+test_var <- array(1:24, dim = c(1, 1, 2, 1, 1, 3, 1, 4, 1, 1))
+names(dim(test_var)) <- c('x', 'y', 'a', 'z', 't', 'b', 'u', 'c', 'v', 'w')
+# Storing the data into a NetCDF file
+a2nc(list(test_var = test_var), file_path)
+# Reading the data back
+fff <- nc2a(file_path, list(a = NA, b = NA, c = NA), vars_to_read = 'test_var')
+# By default, if no indices are provided for the singleton dimensions, they are 
+# automatically read in and preserved
+dim(fff)
+# Reading the data back with expect_all_indices = TRUE
+fff <- nc2a(file_path, list(a = NA, b = NA, c = NA), vars_to_read = 'test_var', 
+            expect_all_indices = TRUE)
+# If indices for all dimensions are not provided and expect_all_indices = TRUE, 
+# the function crashes, except if those dimensions are of length 1. In that 
+# case, the function ignores those (those are dropped)
+dim(fff)
 }
 \author{
 History:\cr

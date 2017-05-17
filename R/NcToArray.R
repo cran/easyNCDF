@@ -72,7 +72,6 @@ NcToArray <- function(file_to_read, dim_indices = NULL, vars_to_read = NULL,
 #  if (!is.character(vars_to_read) && !is.numeric(vars_to_read)) {
 #    stop("Parameter 'vars_to_read' must be a numeric vector or vector of character strings.")
 #  }
-
   result_list <- NULL
   for (vars_to_read_vector in vars_to_read) {
     result <- NULL
@@ -94,12 +93,11 @@ NcToArray <- function(file_to_read, dim_indices = NULL, vars_to_read = NULL,
       }
       #file_object$var[extra_dimvars] <- extra_dimvars_list
       #file_object$nvars <- file_object$nvars + length(extra_dimvars)
-      nmv <- numeric_var_indices <- which(is.numeric(vars_to_read_vector))
-      if (length(nmv) > 0) {
-        if (any(vars_to_read_vector[nmv] > (length(file_object$var) + length(extra_dimvars)))) {
+      if (is.numeric(vars_to_read_vector)) {
+        if (any(vars_to_read_vector > (length(file_object$var) + length(extra_dimvars)))) {
           stop("Provided numerical variable indices out of bounds in 'vars_to_read'.")
         }
-        vars_to_read_vector[nmv] <- c(sapply(file_object$var, '[[', 'name'), extra_dimvars)[vars_to_read_vector[nmv]]
+        vars_to_read_vector <- c(sapply(file_object$var, '[[', 'name'), extra_dimvars)[vars_to_read_vector]
       }
       for (var_name in vars_to_read_vector) {
         if (var_name %in% extra_dimvars) {
@@ -160,11 +158,6 @@ NcToArray <- function(file_to_read, dim_indices = NULL, vars_to_read = NULL,
               }
             }
           }
-          if (expect_all_indices) {
-            extra_dims <- names(extra_dims)
-          } else {
-            extra_dims <- NULL
-          }
           any_empty_selectors <- FALSE
           # Here we are allowing for indices out of range (simply discarding them).
           for (inner_dim in names(indices_to_take)) {
@@ -203,31 +196,50 @@ NcToArray <- function(file_to_read, dim_indices = NULL, vars_to_read = NULL,
             #  }
             #  missing_dims <- missing_dim_names
             #}
+            start <- sapply(indices_to_take, function(x) if (is_single_na(x)) 1 else min(x))
+            count <- sapply(indices_to_take, function(x) if (is_single_na(x)) -1 else max(x) - min(x) + 1)
+            # Support for character strings
+            if ((file_object[['var']][[var_name]][['prec']] == 'char') && 
+                (length(file_object[['var']][[var_name]][['dim']]) > 1)) {
+              start <- c(1, start)
+              count <- c(-1, count)
+            ##  original_ncvar_get_inner <- ncdf4:::ncvar_get_inner
+            ##  assignInNamespace('ncvar_get_inner', .ncvar_get_inner, 'ncdf4')
+            }
+            var_result <- do.call('[', c(list(ncvar_get(file_object, var_name, start, count, collapse_degen = FALSE)),
+                                         lapply(indices_to_take, function(x) if (is_single_na(x)) TRUE else x - min(x) + 1), list(drop = FALSE)))
+            ### Support for character strings
+            ##if ((file_object[['var']][[var_name]][['prec']] == 'char') && 
+            ##    (length(file_object[['var']][[var_name]][['dim']]) > 1)) {
+            ##  assignInNamespace('ncvar_get_inner', original_ncvar_get_inner, 'ncdf4')
+            ##}
+            #metadata <- c(metadata, structure(list(file_object$var[[var_name]]), .Names = var_name))
+            names(dim(var_result)) <- names(indices_to_take)
+            # Drop extra dims
+            if (!is.null(extra_dims) && expect_all_indices) {
+              dim(var_result) <- dim(var_result)[-which(names(indices_to_take) %in% names(extra_dims))]
+            }
+            # Reorder if needed
             reorder_back <- NULL
-            indices_dims <- names(dim_indices)[which(names(dim_indices) %in% names(found_dims))]
+            indices_dims <- names(dim_indices)[which(names(dim_indices) %in% names(dim(var_result)))]
             if (length(indices_dims) > 0) {
-              if (any(names(found_dims) != indices_dims)) {
-                #reorder <- sapply(names(found_dims), function(x) which(indices_dims == x))
-                reorder_back <- sapply(indices_dims, function(x) which(names(found_dims) == x))
+              if (any(names(dim(var_result))[-which(names(dim(var_result)) %in% names(extra_dims))] != indices_dims)) {
+                reorder_back <- 1:length(dim(var_result))
+                dims_to_reorder <- which(!(names(dim(var_result)) %in% names(extra_dims)))
+                reorder_back[dims_to_reorder] <- dims_to_reorder[sapply(indices_dims, 
+                                                                   function(x) {
+                                                                     which(names(dim(var_result))[dims_to_reorder] == x)
+                                                                   })]
+                dimname_bk <- names(dim(var_result))
+                var_result <- aperm(var_result, reorder_back)
+                names(dim(var_result)) <- dimname_bk[reorder_back]
                 #indices_to_take <- indices_to_take[reorder]
               }
             }
-            start <- sapply(indices_to_take, function(x) if (is_single_na(x)) 1 else min(x))
-            count <- sapply(indices_to_take, function(x) if (is_single_na(x)) -1 else max(x) - min(x) + 1)
-            var_result <- do.call('[', c(list(ncvar_get(file_object, var_name, start, count, collapse_degen = FALSE)),
-                                         lapply(indices_to_take, function(x) if (is_single_na(x)) TRUE else x - min(x) + 1), list(drop = FALSE)))
-            #metadata <- c(metadata, structure(list(file_object$var[[var_name]]), .Names = var_name))
             ## TODO: Crop dimensions in attributes
-            if (!is.null(reorder_back)) {
-              var_result <- aperm(var_result, reorder_back)
-            }
-            names(dim(var_result)) <- names(indices_to_take)[reorder_back]
             #if (!is.null(missing_dims)) {
             #  dim(var_result) <- original_dims
             #}
-            if (!is.null(extra_dims)) {
-              dim(var_result) <- dim(var_result)[-which(names(indices_to_take) %in% extra_dims)]
-            }
             #attr(var_result, 'variables') <- metadata
           }
           atts <- file_object$var[[var_name]]
@@ -244,7 +256,7 @@ NcToArray <- function(file_to_read, dim_indices = NULL, vars_to_read = NULL,
           #names(dim(var_result)) <- sapply(file_object$var[[var_name]]$dim, '[[', 'name')
         }
         if (!is.null(var_result)) {
-          if (!drop_var_dim || (length(vars_to_read_vector) == 1)) {
+          if (!(drop_var_dim && (length(vars_to_read_vector) == 1))) {
             dim(var_result) <- c(setNames(1, var_tag), dim(var_result))
           }
           attr(var_result, 'variables') <- structure(list(atts), .Names = var_name)
