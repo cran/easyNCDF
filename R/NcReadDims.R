@@ -1,3 +1,30 @@
+#'Read Dimensions of a NetCDF File
+#'
+#'@author N. Manubens \email{nicolau.manubens at bsc.es}
+#'@description Reads the dimension names and sizes of a set of variables in a NetCDF file, using the package \code{ncdf4}. The different variables in the file are considered to be stored along a dimension called 'var', so reading the dimensions of a variable 'foo' with dimensions 'lat' and 'lon' would result in a vector with the format c('var' = 1, 'lat' = n_lats, 'lon' = n_lons).
+#'
+#'@param file_to_read Path to the file to be read or a NetCDF object as returned by \code{easyNCDF::NcOpen} or \code{ncdf4::nc_open}.
+#'@param var_names Vector of character strings with the names of the variables which to read the dimensions for. If multiple variables are requested, their dimensions will be merged and returned in a single vector.
+#'
+#'@import ncdf4
+#'@examples
+#'# Create an array from R
+#'file_path <- tempfile(fileext = '.nc')
+#'a <- array(1:9, dim = c(member = 3, time = 3))
+#'# Store into a NetCDF twice, as two different variables
+#'ArrayToNc(list(var_1 = a, var_2 = a + 1), file_path)
+#'# Read the dimensions and variables in the created file
+#'fnc <- NcOpen(file_path)
+#'fnc_dims <- NcReadDims(fnc)
+#'var_names <- NcReadVarNames(fnc)
+#'# Read the two variables from the file into an R array
+#'a_from_file <- NcToArray(fnc, vars_to_read = var_names)
+#'NcClose(fnc)
+#'# Check the obtained array matches the original array
+#'print(a)
+#'print(a_from_file[1, , ])
+#'
+#'@export
 NcReadDims <- function(file_to_read, var_names = NULL) {
   file_opener <- nc_open
   file_closer <- nc_close
@@ -52,8 +79,7 @@ NcReadDims <- function(file_to_read, var_names = NULL) {
       new_dim <- c(var = 1)
       found_dims <- c(new_dim, found_dims)
       if (!is.null(dims)) {
-        dims <- .MergeArrayDims(dims, found_dims)
-        dims <- pmax(dims[[1]], dims[[2]])
+        dims <- .MergeArrayDims(dims, found_dims)[[3]]
         dims['var'] <- dims['var'] + 1
       } else {
         dims <- found_dims

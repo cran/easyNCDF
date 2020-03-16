@@ -131,6 +131,11 @@
 # It expects as inputs two named numeric vectors, and it extends them
 # with dimensions of length 1 until an ordered common dimension
 # format is reached.
+# The first output is dims1 extended with 1s.
+# The second output is dims2 extended with 1s.
+# The third output is a merged dimension vector. If dimensions with
+# the same name are found in the two inputs, and they have a different
+# length, the maximum is taken.
 .MergeArrayDims <- function(dims1, dims2) {
   new_dims1 <- c()
   new_dims2 <- c()
@@ -158,7 +163,7 @@
     new_dims1 <- c(new_dims1, dims_to_add)
     new_dims2 <- c(new_dims2, dims2)
   }
-  list(new_dims1, new_dims2)
+  list(new_dims1, new_dims2, pmax(new_dims1, new_dims2))
 }
 
 # This function takes two named arrays and merges them, filling with
@@ -173,33 +178,41 @@
 #    'a'   'b'   'c'   'e'   'd'   'f'   'g'
 #     2     4     3     7     5     9     11
 .MergeArrays <- function(array1, array2, along) {
-  if (!(identical(names(dim(array1)), names(dim(array2))) &&
-      identical(dim(array1)[-which(names(dim(array1)) == along)],
-                dim(array2)[-which(names(dim(array2)) == along)]))) {
-    new_dims <- .MergeArrayDims(dim(array1), dim(array2))
-    dim(array1) <- new_dims[[1]]
-    dim(array2) <- new_dims[[2]]
-    for (j in 1:length(dim(array1))) {
-      if (names(dim(array1))[j] != along) {
-        if (dim(array1)[j] != dim(array2)[j]) {
-          if (which.max(c(dim(array1)[j], dim(array2)[j])) == 1) {
-            na_array_dims <- dim(array2)
-            na_array_dims[j] <- dim(array1)[j] - dim(array2)[j]
-            na_array <- array(dim = na_array_dims)
-            array2 <- abind(array2, na_array, along = j)
-            names(dim(array2)) <- names(na_array_dims)
-          } else {
-            na_array_dims <- dim(array1)
-            na_array_dims[j] <- dim(array2)[j] - dim(array1)[j]
-            na_array <- array(dim = na_array_dims)
-            array1 <- abind(array1, na_array, along = j)
-            names(dim(array1)) <- names(na_array_dims)
+  if (!(is.null(array1) || is.null(array2))) {
+    if (!(identical(names(dim(array1)), names(dim(array2))) &&
+        identical(dim(array1)[-which(names(dim(array1)) == along)],
+                  dim(array2)[-which(names(dim(array2)) == along)]))) {
+      new_dims <- .MergeArrayDims(dim(array1), dim(array2))
+      dim(array1) <- new_dims[[1]]
+      dim(array2) <- new_dims[[2]]
+      for (j in 1:length(dim(array1))) {
+        if (names(dim(array1))[j] != along) {
+          if (dim(array1)[j] != dim(array2)[j]) {
+            if (which.max(c(dim(array1)[j], dim(array2)[j])) == 1) {
+              na_array_dims <- dim(array2)
+              na_array_dims[j] <- dim(array1)[j] - dim(array2)[j]
+              na_array <- array(dim = na_array_dims)
+              array2 <- abind::abind(array2, na_array, along = j)
+              names(dim(array2)) <- names(na_array_dims)
+            } else {
+              na_array_dims <- dim(array1)
+              na_array_dims[j] <- dim(array2)[j] - dim(array1)[j]
+              na_array <- array(dim = na_array_dims)
+              array1 <- abind::abind(array1, na_array, along = j)
+              names(dim(array1)) <- names(na_array_dims)
+            }
           }
         }
       }
     }
+    if (!(along %in% names(dim(array2)))) {
+      stop("The dimension specified in 'along' is not present in the ",
+           "provided arrays.")
+    }
+    array1 <- abind::abind(array1, array2, along = which(names(dim(array1)) == along))
+    names(dim(array1)) <- names(dim(array2))
+  } else if (is.null(array1)) {
+    array1 <- array2
   }
-  array1 <- abind(array1, array2, along = which(names(dim(array1)) == along))
-  names(dim(array1)) <- names(dim(array2))
   array1
 }
