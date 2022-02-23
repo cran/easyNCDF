@@ -1,6 +1,6 @@
 #'Read Names of Variables in a NetCDF File
 #'
-#'@author N. Manubens, \email{nicolau.manubens at bsc.es}
+#'@author N. Manubens, \email{nicolau.manubens@bsc.es}
 #'
 #'@description Reads the names of the variables in a NetCDF file and returns them as a vector of character strings.
 #'

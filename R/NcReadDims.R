@@ -1,6 +1,6 @@
 #'Read Dimensions of a NetCDF File
 #'
-#'@author N. Manubens \email{nicolau.manubens at bsc.es}
+#'@author N. Manubens \email{nicolau.manubens@bsc.es}
 #'@description Reads the dimension names and sizes of a set of variables in a NetCDF file, using the package \code{ncdf4}. The different variables in the file are considered to be stored along a dimension called 'var', so reading the dimensions of a variable 'foo' with dimensions 'lat' and 'lon' would result in a vector with the format c('var' = 1, 'lat' = n_lats, 'lon' = n_lons).
 #'
 #'@param file_to_read Path to the file to be read or a NetCDF object as returned by \code{easyNCDF::NcOpen} or \code{ncdf4::nc_open}.

@@ -1,6 +1,6 @@
 #'Open a NetCDF File
 #'
-#'@author N. Manubens \email{nicolau.manubens at bsc.es}
+#'@author N. Manubens \email{nicolau.manubens@bsc.es}
 #'
 #'@description Silently opens a NetCDF file with \code{ncdf4::nc_open}. Returns NULL on failure.
 #'

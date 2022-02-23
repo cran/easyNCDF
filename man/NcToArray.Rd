@@ -4,9 +4,15 @@
 \alias{NcToArray}
 \title{Read Names of Variables in a NetCDF File}
 \usage{
-NcToArray(file_to_read, dim_indices = NULL, vars_to_read = NULL,
-  drop_var_dim = FALSE, unlist = TRUE, expect_all_indices = FALSE,
-  allow_out_of_range = TRUE)
+NcToArray(
+  file_to_read,
+  dim_indices = NULL,
+  vars_to_read = NULL,
+  drop_var_dim = FALSE,
+  unlist = TRUE,
+  expect_all_indices = FALSE,
+  allow_out_of_range = TRUE
+)
 }
 \arguments{
 \item{file_to_read}{Path to the file to be read or a NetCDF object as returned by \code{easyNCDF::NcOpen} or \code{ncdf4::nc_open}.}
@@ -55,6 +61,5 @@ print(a_from_file[1, , ])
 
 }
 \author{
-N. Manubens, \email{nicolau.manubens at bsc.es}
+N. Manubens, \email{nicolau.manubens@bsc.es}
 }
-

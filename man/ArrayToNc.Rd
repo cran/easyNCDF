@@ -197,6 +197,5 @@ ArrayToNc(list(tos, lon, lat), 'tmp.nc')
 
 }
 \author{
-N. Manubens \email{nicolau.manubens at bsc.es}
+N. Manubens \email{nicolau.manubens@bsc.es}
 }
-

@@ -1,6 +1,6 @@
 #'Close a NEtCDF File
 #'
-#'@author N. Manubens \email{nicolau.manubens at bsc.es}
+#'@author N. Manubens \email{nicolau.manubens@bsc.es}
 #'
 #'@description Close a \code{ncdf4} open connection to a file.
 #'

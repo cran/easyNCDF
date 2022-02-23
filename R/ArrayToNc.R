@@ -1,6 +1,6 @@
 #'Save multidimensional R arrays into NetCDF files
 #'
-#'@author N. Manubens \email{nicolau.manubens at bsc.es}
+#'@author N. Manubens \email{nicolau.manubens@bsc.es}
 #'@description This function takes as input one or a list of multidimensional R arrays and stores them in a NetCDF file, using the \code{ncdf4} package. The full path and name of the resulting file must be specified. Metadata can be attached to the arrays and propagated into the NetCDF file in 3 possible ways:\cr
 #'  \itemize{
  #'   \item{Via the list names if a list of arrays is provided:}{Each name in the input list, corresponding to one multidimensional array, will be interpreted as the name of the variable it contains.\cr

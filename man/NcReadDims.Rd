@@ -33,6 +33,5 @@ print(a_from_file[1, , ])
 
 }
 \author{
-N. Manubens \email{nicolau.manubens at bsc.es}
+N. Manubens \email{nicolau.manubens@bsc.es}
 }
-
