@@ -216,3 +216,51 @@
   }
   array1
 }
+
+# This function also exists in startR::Utils. It serves the same functionality as ClimProjDiags::Subset.
+.subset <- function(x, along, indices, drop = FALSE) {
+  # x: array with dimension names
+  # along: a vector of all characters or all numerics
+  # indices: a list of indices
+  # drop: F/"selected"
+
+  if (any(is.character(along))) {
+    along <- match(along, names(dim(x)))
+    if (!all(is.numeric(along))) {
+      stop("Check parameter 'along'.")
+    }
+  }
+  if (!is.list(indices)) {
+    if (length(along) == 1) {
+      indices <- list(indices)
+    } else {
+      stop("Parameter 'indices' should be a list.")
+    }
+  }
+  if (length(indices) != length(along)) {
+    stop("Parameter 'along' and 'indices' should have the same length.")
+  }
+  if (!drop %in% c(FALSE, 'selected')) {
+    stop("Parameter 'drop' can only be FALSE or 'selected'.")
+  }
+
+  # Save attributes except 'dim'
+  saved_attr <- attributes(x)[-which(names(attributes(x)) == 'dim')]
+
+  # Take the subset
+  index <- as.list(rep(TRUE, length(dim(x))))
+  index[along] <- indices
+  subset <- eval(as.call(c(as.name("["), as.name("x"), index, drop = F)))
+
+  if (drop == 'selected') {
+    need_remove <- dim(subset)[along] == 1  # T,F
+    if (any(need_remove)) {
+      dim(subset) <- dim(subset)[-along[which(need_remove)]]
+    }
+  }
+
+  # Add attributes back
+  attributes(subset)[names(saved_attr)] <- saved_attr
+
+  return(subset)
+}

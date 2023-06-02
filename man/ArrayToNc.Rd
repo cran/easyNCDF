@@ -10,7 +10,10 @@ ArrayToNc(arrays, file_path)
 a2nc(arrays, file_path)
 }
 \arguments{
-\item{arrays}{One or a list of multidimensional data arrays. The list can be provided with names, which will be interpreted as variable names. The arrays can be provided with dimension names. The arrays can be provided with metadata in the attribute 'variables' (read section Description for details).}
+\item{arrays}{One or a list of multidimensional data arrays. The list can be 
+provided with names, which will be interpreted as variable names. The arrays
+can be provided with dimension names. The arrays can be provided with
+metadata in the attribute 'variables' (read section Description for details).}
 
 \item{file_path}{Path and name of the NetCDF file to be created.}
 }
@@ -18,16 +21,26 @@ a2nc(arrays, file_path)
 This function returns NULL.
 }
 \description{
-This function takes as input one or a list of multidimensional R arrays and stores them in a NetCDF file, using the \code{ncdf4} package. The full path and name of the resulting file must be specified. Metadata can be attached to the arrays and propagated into the NetCDF file in 3 possible ways:\cr
+This function takes as input one or a list of multidimensional R
+arrays and stores them in a NetCDF file, using the \code{ncdf4} package. The
+full path and name of the resulting file must be specified. Metadata can be 
+attached to the arrays and propagated into the NetCDF file in 3 possible 
+ways:\cr
  \itemize{
-  \item{Via the list names if a list of arrays is provided:}{Each name in the input list, corresponding to one multidimensional array, will be interpreted as the name of the variable it contains.\cr
+  \item{Via the list names if a list of arrays is provided:}{Each name in 
+      the input list, corresponding to one multidimensional array, will be
+      interpreted as the name of the variable it contains.\cr
 E.g:\cr
     \code{
 ArrayToNc(arrays = list(temperature = array(1:9, c(3, 3))),
-             file_path = 'example.nc')
+         file_path = 'example.nc')
      }
    }
-   \item{Via the dimension names of each provided array:}{The dimension names of each of the provided arrays will be interpreted as names for the dimensions of the NetCDF files. Read further for special dimension names that will trigger special behaviours, such as 'time' and 'var'.\cr
+   \item{Via the dimension names of each provided array:}{The dimension names
+      of each of the provided arrays will be interpreted as names for the 
+      dimensions of the NetCDF files. Read further for special dimension 
+      names that will trigger special behaviours, such as 'time' and 'var'.
+\cr
 E.g:\cr
      \code{
 temperature <- array(rnorm(100 * 50 * 10), dim = c(100, 50, 10))
@@ -35,12 +48,23 @@ names(dim(temperature)) <- c('longitude', 'latitude', 'time')
 ArrayToNc(list(temperature = temperature), file_path = 'example.nc')
      }
    }
-   \item{Via the attribute 'variables' of each provided array:}{The arrays can be provided with metadata in an attribute named 'variables', which is expected to be a named list of named lists, where the names of the container list are the names of the variables present in the provided array, and where each sub-list contains metadata for each of the variables. The attribute names and values supported in the sub-lists must follow the same format the package \code{ncdf4} uses to represent the NetCDF file headers.\cr
+   \item{Via the attribute 'variables' of each provided array:}{The arrays 
+      can be provided with metadata in an attribute named 'variables', which
+      is expected to be a named list of named lists, where the names of the 
+      container list are the names of the variables present in the provided
+      array, and where each sub-list contains metadata for each of the 
+      variables. The attribute names and values supported in the sub-lists 
+      must follow the same format the package \code{ncdf4} uses to represent
+      the NetCDF file headers.\cr
 E.g:\cr
      \code{
 a <- array(1:400, dim = c(5, 10, 4, 2))
 metadata <- list(
              tos = list(addOffset = 100,
+                        scaleFact = 10,
+                        dim = list(list(name = 'time',
+                                        unlim = FALSE))),
+             tas = list(addOffset = 100,
                         scaleFact = 10,
                         dim = list(list(name = 'time',
                                         unlim = FALSE)))
@@ -52,8 +76,18 @@ ArrayToNc(a, 'tmp.nc')
    }
  }
 The special dimension names are 'var'/'variable' and 'time'.\cr
-If a dimension is named 'var' or 'variable', \code{ArrayToNc} will interpret each array entry along such dimension corresponds to a separate new variable, hence will create a new variable inside the NetCDF file and will use it to store all the data in the provided array for the corresponding entry along the 'var'/'variable' dimension.\cr
-If a dimension is named 'time', by default it will be interpreted and built as an unlimited dimension. The 'time' dimension must be the last dimension of the array (the right-most). If a 'var'/'variable' dimension is present, the 'time' dimension can be also placed on its left (i.e. the one before the last dimension). The default behaviour of creating the 'time' as unlimited dimension can be disabled by setting manually the attribute \code{unlim = FALSE}, as shown in the previous example.\cr\cr
+If a dimension is named 'var' or 'variable', \code{ArrayToNc} will interpret 
+each array entry along such dimension corresponds to a separate new variable,
+hence will create a new variable inside the NetCDF file and will use it to 
+store all the data in the provided array for the corresponding entry along the
+'var'/'variable' dimension.\cr
+If a dimension is named 'time', by default it will be interpreted and built as
+an unlimited dimension. The 'time' dimension must be the last dimension of the
+array (the right-most). If a 'var'/'variable' dimension is present, the 'time'
+dimension can be also placed on its left (i.e. the one before the last
+dimension). The default behaviour of creating the 'time' as unlimited 
+dimension can be disabled by setting manually the attribute 
+\code{unlim = FALSE}, as shown in the previous example.\cr\cr
 \code{a2nc} is an alias of \code{ArrayToNc}.
 }
 \examples{
@@ -83,7 +117,8 @@ a <- array(1:1600, dim = c(10, 20, 4, 2))
 names(dim(a)) <- c('lat', 'lon', 'time', 'var')
 ArrayToNc(a, 'tmp.nc')
 
-# The dimension 'var'/'variable' can be in any position and can have any length
+# The dimension 'var'/'variable' can be in any position and can have any 
+# length.
 a <- array(1:1600, dim = c(10, 20, 4, 2))
 names(dim(a)) <- c('lat', 'var', 'lon', 'time')
 ArrayToNc(a, 'tmp.nc')
