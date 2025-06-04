@@ -25,53 +25,56 @@ This function takes as input one or a list of multidimensional R
 arrays and stores them in a NetCDF file, using the \code{ncdf4} package. The
 full path and name of the resulting file must be specified. Metadata can be 
 attached to the arrays and propagated into the NetCDF file in 3 possible 
-ways:\cr
- \itemize{
-  \item{Via the list names if a list of arrays is provided:}{Each name in 
-      the input list, corresponding to one multidimensional array, will be
-      interpreted as the name of the variable it contains.\cr
-E.g:\cr
-    \code{
-ArrayToNc(arrays = list(temperature = array(1:9, c(3, 3))),
-         file_path = 'example.nc')
+ways:
+ \describe{
+   \item{Via the list names if a list of arrays is provided:}{
+     Each name in the input list, corresponding to one multidimensional 
+     array, will be interpreted as the name of the variable it contains.
+     
+     E.g.:
+     \code{
+     ArrayToNc(arrays = list(temperature = array(1:9, c(3, 3))),
+               file_path = 'example.nc')
      }
    }
-   \item{Via the dimension names of each provided array:}{The dimension names
-      of each of the provided arrays will be interpreted as names for the 
-      dimensions of the NetCDF files. Read further for special dimension 
-      names that will trigger special behaviours, such as 'time' and 'var'.
-\cr
-E.g:\cr
+   \item{Via the dimension names of each provided array:}{
+     The dimension names of each of the provided arrays will be interpreted 
+     as names for the dimensions of the NetCDF files. Read further for 
+     special dimension names that will trigger special behaviours, such as 
+     'time' and 'var'.
+
+     E.g.:
      \code{
-temperature <- array(rnorm(100 * 50 * 10), dim = c(100, 50, 10))
-names(dim(temperature)) <- c('longitude', 'latitude', 'time')
-ArrayToNc(list(temperature = temperature), file_path = 'example.nc')
+     temperature <- array(rnorm(100 * 50 * 10), dim = c(100, 50, 10))
+     names(dim(temperature)) <- c('longitude', 'latitude', 'time')
+     ArrayToNc(list(temperature = temperature), file_path = 'example.nc')
      }
    }
-   \item{Via the attribute 'variables' of each provided array:}{The arrays 
-      can be provided with metadata in an attribute named 'variables', which
-      is expected to be a named list of named lists, where the names of the 
-      container list are the names of the variables present in the provided
-      array, and where each sub-list contains metadata for each of the 
-      variables. The attribute names and values supported in the sub-lists 
-      must follow the same format the package \code{ncdf4} uses to represent
-      the NetCDF file headers.\cr
-E.g:\cr
+   \item{Via the attribute 'variables' of each provided array:}{
+     The arrays can be provided with metadata in an attribute named 
+     'variables', which is expected to be a named list of named lists, where 
+     the names of the container list are the names of the variables present 
+     in the provided array, and where each sub-list contains metadata for 
+     each of the variables. The attribute names and values supported in the 
+     sub-lists must follow the same format the package \code{ncdf4} uses to 
+     represent the NetCDF file headers.
+    
+     E.g.:
      \code{
-a <- array(1:400, dim = c(5, 10, 4, 2))
-metadata <- list(
-             tos = list(addOffset = 100,
-                        scaleFact = 10,
-                        dim = list(list(name = 'time',
-                                        unlim = FALSE))),
-             tas = list(addOffset = 100,
-                        scaleFact = 10,
-                        dim = list(list(name = 'time',
-                                        unlim = FALSE)))
-           )
-attr(a, 'variables') <- metadata
-names(dim(a)) <- c('lat', 'lon', 'time', 'var')
-ArrayToNc(a, 'tmp.nc')
+     a <- array(1:400, dim = c(5, 10, 4, 2))
+     metadata <- list(
+       tos = list(addOffset = 100,
+                  scaleFact = 10,
+                  dim = list(list(name = 'time',
+                                  unlim = FALSE))),
+       tas = list(addOffset = 100,
+                  scaleFact = 10,
+                  dim = list(list(name = 'time',
+                                  unlim = FALSE)))
+     )
+     attr(a, 'variables') <- metadata
+     names(dim(a)) <- c('lat', 'lon', 'time', 'var')
+     ArrayToNc(a, 'tmp.nc')
      }
    }
  }
